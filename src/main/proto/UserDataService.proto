@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package ru.liljarn.gandalf.user;
+
+option java_package = "ru.liljarn.gandalf.user";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+service UserDataService {
+  rpc getUserDataByJwt(GetUserDataJwtRequest) returns (UserDataResponse);
+  rpc getUserDataById(GetUserDataIdRequest) returns (UserDataResponse);
+}
+
+message GetUserDataJwtRequest {
+  string jwt = 1;
+}
+
+message GetUserDataIdRequest {
+  string uuid = 1;
+}
+
+message UserDataResponse {
+  string uuid = 1;
+  string email = 2;
+  string firstName = 3;
+  string lastName = 4;
+  google.protobuf.Timestamp birthdate = 5;
+  string photoUrl = 6;
+}

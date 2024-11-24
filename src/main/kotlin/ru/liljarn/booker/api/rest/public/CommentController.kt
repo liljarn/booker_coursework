@@ -1,4 +1,4 @@
-package ru.liljarn.booker.api.rest
+package ru.liljarn.booker.api.rest.public
 
 import org.springframework.web.bind.annotation.*
 import ru.liljarn.booker.api.model.request.CommentRequest

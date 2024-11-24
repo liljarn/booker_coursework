@@ -59,30 +59,41 @@ sourceSets {
 }
 
 dependencies {
+    // Spring
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // Kotlin Support
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+
+    // Database
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    runtimeOnly("org.postgresql:postgresql")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.postgresql:postgresql")
+
+    // Test
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     // gRPC
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
-    api(platform("io.grpc:grpc-bom:1.68.0"))
-    api("io.grpc:grpc-api")
-    api("io.grpc:grpc-core")
-    api("io.grpc:grpc-protobuf")
-    api("io.grpc:grpc-kotlin-stub:1.4.1")
-    api("io.grpc:grpc-stub")
-    api("io.grpc:grpc-netty-shaded")
-    api("com.google.protobuf:protobuf-java-util:4.28.2")
-    api("com.google.protobuf:protobuf-kotlin:4.28.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation(platform("io.grpc:grpc-bom:1.68.0"))
+    implementation("io.grpc:grpc-api")
+    implementation("io.grpc:grpc-core")
+    implementation("io.grpc:grpc-protobuf")
+    implementation("io.grpc:grpc-kotlin-stub:1.4.1")
+    implementation("io.grpc:grpc-stub")
+    implementation("io.grpc:grpc-netty-shaded")
+    implementation("com.google.protobuf:protobuf-java-util:4.28.2")
+    implementation("com.google.protobuf:protobuf-kotlin:4.28.2")
+
+    // S3
+    implementation("io.minio:minio:8.5.13")
 }
 
 kotlin {

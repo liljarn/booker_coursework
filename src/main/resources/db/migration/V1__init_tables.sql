@@ -2,7 +2,7 @@ CREATE TABLE author
 (
     author_id        BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     author_name      VARCHAR(256) UNIQUE NOT NULL,
-    author_photo_url TEXT                NOT NULL
+    author_photo_url TEXT
 );
 
 CREATE TABLE book
@@ -43,8 +43,18 @@ CREATE TABLE comment
 
 CREATE TABLE book_rent_queue
 (
-    order_id UUID PRIMARY KEY,
-    book_id  BIGINT UNIQUE NOT NULL REFERENCES book (book_id),
-    user_id  UUID          NOT NULL,
-    due_date DATE          NOT NULL
+    rent_id    UUID PRIMARY KEY,
+    book_id    BIGINT UNIQUE NOT NULL REFERENCES book (book_id),
+    user_id    UUID          NOT NULL,
+    due_date   DATE          NOT NULL,
+    deleted_at TIMESTAMP
+);
+
+CREATE TABLE book_reservation_queue
+(
+    reservation_id UUID PRIMARY KEY,
+    book_id        BIGINT UNIQUE NOT NULL REFERENCES book (book_id),
+    user_id        UUID          NOT NULL,
+    due_date       DATE          NOT NULL,
+    deleted_at     TIMESTAMP
 );

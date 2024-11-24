@@ -11,17 +11,17 @@ services:
       - "15432:5432"
     volumes:
       - postgresql:/var/lib/postgresql/
-#  minio:
-#    image: minio/minio
-#    ports:
-#      - "9000:9000"
-#      - "9001:9001"
-#    volumes:
-#      - minio_data:/data
-#    environment:
-#      MINIO_ROOT_USER: gandalf
-#      MINIO_ROOT_PASSWORD: youshallnotpass
-#    command: server --console-address ":9001" /data
+  minio:
+    image: minio/minio
+    ports:
+      - "19000:9000"
+      - "19001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: booker
+      MINIO_ROOT_PASSWORD: yaponimaybookera
+    command: server --console-address ":19001" /data
 
 volumes:
   postgresql: { }

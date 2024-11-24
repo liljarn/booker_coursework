@@ -14,7 +14,8 @@ data class BookEntity(
     val releaseYear: Short,
     val ageLimit: Short,
     val description: String,
-    val status: BookStatus,
     val rating: BigDecimal = BigDecimal.ZERO,
     val photoUrl: String
-)
+) {
+    var status: BookStatus = BookStatus.AVAILABLE
+}

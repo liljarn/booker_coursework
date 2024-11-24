@@ -13,8 +13,24 @@ spring:
     enabled: true
     validate-on-migrate: true
 
+api:
+  management:
+    key: "BOOKER"
+
 grpc:
   client:
     gandalf:
       address: localhost:9098
       negotiation-type: plaintext
+
+minio:
+  authorBucket: author
+  bookBucket: book
+  url: http://localhost:19000
+  access_key: booker
+  secret_key: yaponimaybookera
+
+jobs:
+  reservationCheck:
+    cron: "0 0 0 * * ?"
+    enabled: true

@@ -1,13 +1,9 @@
 package ru.liljarn.booker.support.mapper
 
 import org.springframework.data.domain.Page
-import ru.liljarn.booker.api.security.userId
 import ru.liljarn.booker.domain.model.dto.*
-import ru.liljarn.booker.domain.model.entity.AuthorEntity
-import ru.liljarn.booker.domain.model.entity.CommentEntity
+import ru.liljarn.booker.domain.model.entity.*
 import ru.liljarn.gandalf.user.UserDataResponse
-import java.time.Instant
-import java.time.ZoneOffset
 import java.util.*
 
 fun Page<AuthorEntity>.toDto(): AuthorPage = AuthorPage(
@@ -15,11 +11,10 @@ fun Page<AuthorEntity>.toDto(): AuthorPage = AuthorPage(
     authors = content.map { it.toDto() }
 )
 
-
 fun AuthorEntity.toDto(): Author = Author(
-    authorId = authorId,
+    authorId = authorId ?: throw RuntimeException(),
     authorName = authorName,
-    photoUrl = photoUrl
+    photoUrl = authorPhotoUrl
 )
 
 inline fun Page<CommentEntity>.toDto(getUserData: (UUID) -> UserDataResponse): CommentPage = CommentPage(
@@ -43,16 +38,24 @@ inline fun CommentEntity.toDto(getUserData: (UUID) -> UserDataResponse): Comment
     bookId = bookId
 )
 
-fun UserDataResponse.toUserData(): UserData = UserData(
-    userId = userId,
-    email = email,
-    firstName = firstName,
-    lastName = lastName,
-    birthDate = Instant.ofEpochSecond(birthdate.seconds, birthdate.nanos.toLong()).atZone(ZoneOffset.UTC).toLocalDate(),
-    photoUrl = photoUrl
-)
-
 fun List<Book>.toDto(total: Long): BookPage = BookPage(
     total = total,
     books = this
+)
+
+fun Page<GenreEntity>.toDto(): GenrePage = GenrePage (
+    total = totalElements,
+    genres = content.map { it.toDto() }
+)
+
+fun GenreEntity.toDto(): Genre = Genre(
+    genreId = genreId,
+    genreName = genreName,
+)
+
+fun ReservationEntity.toDto(): ClientReservation = ClientReservation(
+    reservationId = reservationId,
+    bookId = bookId,
+    userId = userId,
+    dueDate = dueDate
 )

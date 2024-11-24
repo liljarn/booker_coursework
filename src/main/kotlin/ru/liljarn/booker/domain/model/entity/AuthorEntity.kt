@@ -5,8 +5,9 @@ import org.springframework.data.relational.core.mapping.Table
 
 @Table("author")
 data class AuthorEntity(
-    @Id
-    val authorId: Long,
     val authorName: String,
-    val photoUrl: String
-)
+    val authorPhotoUrl: String?
+) {
+    @Id
+    var authorId: Long? = null
+}

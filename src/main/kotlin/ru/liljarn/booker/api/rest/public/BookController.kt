@@ -1,6 +1,7 @@
 package ru.liljarn.booker.api.rest.public
 
 import org.springframework.web.bind.annotation.*
+import ru.liljarn.booker.api.security.softUserContext
 import ru.liljarn.booker.domain.service.BookService
 
 @RestController
@@ -10,14 +11,16 @@ class BookController(
 ) {
 
     @GetMapping("/info/{bookId}")
-    fun getBookInfo(@PathVariable bookId: Long) = bookService.findBook(bookId)
+    fun getBookInfo(@PathVariable bookId: Long) = softUserContext {
+        bookService.findBook(bookId)
+    }
 
     @GetMapping("/list")
     fun getBooksPage(
         @RequestParam page: Int,
         @RequestParam bookName: String?,
         @RequestParam author: String?,
-        @RequestBody genres: List<Int>?
+        @RequestParam genres: List<Int>?
     ) = bookService.findBooksPage(page, bookName, author, genres)
 
     @GetMapping("/author/{authorId}")

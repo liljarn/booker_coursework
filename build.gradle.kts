@@ -62,7 +62,6 @@ dependencies {
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -70,6 +69,7 @@ dependencies {
     // Kotlin Support
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Database
     implementation("org.flywaydb:flyway-core")
@@ -94,6 +94,9 @@ dependencies {
 
     // S3
     implementation("io.minio:minio:8.5.13")
+
+    // Logging
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
 }
 
 kotlin {

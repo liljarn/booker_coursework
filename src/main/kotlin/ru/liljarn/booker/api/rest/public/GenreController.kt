@@ -13,8 +13,9 @@ class GenreController(
 ) {
 
     @GetMapping
-    fun getGenres(@RequestParam page: Int) = genreService.getGenresPage(page)
+    fun getGenres() = genreService.getGenres()
 
     @GetMapping("/name")
-    fun getGenresByName(@RequestParam page: Int, @RequestParam text: String) = genreService.getGenresPageByName(page, text)
+    fun getGenresByName(@RequestParam text: String) =
+        genreService.getGenresPageByName(text)
 }

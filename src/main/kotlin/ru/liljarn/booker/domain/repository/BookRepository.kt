@@ -6,6 +6,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import ru.liljarn.booker.domain.model.dto.Book
+import ru.liljarn.booker.domain.model.dto.BookInfo
 import ru.liljarn.booker.domain.model.entity.BookEntity
 import ru.liljarn.booker.domain.model.type.BookStatus
 import java.util.*
@@ -16,6 +17,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
             a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
+            rq.user_id AS rent_user_id, brq.user_id AS reservation_user_id,
             jsonb_agg(
                 jsonb_build_object(
                     'genreId', g.genre_id,
@@ -26,10 +28,13 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         JOIN author a ON b.author_id = a.author_id
         JOIN book_genre bg ON bg.book_id = b.book_id
         JOIN genre g ON g.genre_id = bg.genre_id
+        LEFT JOIN book_rent_queue rq ON rq.book_id = b.book_id
+        LEFT JOIN book_reservation_queue brq ON brq.book_id = b.book_id
         WHERE b.book_id = :id
-        GROUP BY b.book_id, a.author_id
+        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id
+        ORDER BY b.book_id;
     """)
-    fun findByBookId(@Param("id") bookId: Long): Book?
+    fun findByBookId(@Param("id") bookId: Long): BookInfo?
 
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,

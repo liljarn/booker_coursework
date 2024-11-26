@@ -17,3 +17,6 @@ class SecurityContext(
 
 val user: UserDataResponse
     get() = securityContext.get()?.userInfo ?: throw IllegalArgumentException("User not authenticated")
+
+val nullableUser: UserDataResponse?
+    get() = securityContext.get()?.userInfo

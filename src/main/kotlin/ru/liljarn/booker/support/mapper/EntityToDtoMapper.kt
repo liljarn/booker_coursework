@@ -43,11 +43,6 @@ fun List<Book>.toDto(total: Long): BookPage = BookPage(
     books = this
 )
 
-fun Page<GenreEntity>.toDto(): GenrePage = GenrePage (
-    total = totalElements,
-    genres = content.map { it.toDto() }
-)
-
 fun GenreEntity.toDto(): Genre = Genre(
     genreId = genreId,
     genreName = genreName,

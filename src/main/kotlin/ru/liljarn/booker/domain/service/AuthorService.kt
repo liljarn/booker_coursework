@@ -26,14 +26,10 @@ class AuthorService(
         authorRepository.findAllByAuthorNameContainingIgnoreCase(text, it)
     }.toDto()
 
-    fun addAuthor(request: AddAuthorRequest) {
-        val authorPhotoUrl = request.authorPhoto?.let {
-            imageService.uploadImage(it.inputStream, request.authorName)
-        }
-
+    fun addAuthor(request: AddAuthorRequest) = request.let {
         AuthorEntity(
-            authorName = request.authorName,
-            authorPhotoUrl = authorPhotoUrl
-        ).also { authorRepository.addNewAuthor(it) }
+            authorName = it.authorName,
+            authorPhotoUrl = imageService.uploadImage(it.authorPhoto.inputStream, request.authorName)
+        ).let { entity -> authorRepository.save(entity) }
     }
 }

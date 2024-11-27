@@ -1,4 +1,4 @@
-package ru.liljarn.booker.api.rest.management.support
+package ru.liljarn.booker.support.reflection
 
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value

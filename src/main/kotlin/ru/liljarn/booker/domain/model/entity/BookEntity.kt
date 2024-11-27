@@ -7,8 +7,6 @@ import java.math.BigDecimal
 
 @Table("book")
 data class BookEntity(
-    @Id
-    val bookId: Long,
     val bookName: String,
     val authorId: Long,
     val releaseYear: Short,
@@ -17,5 +15,7 @@ data class BookEntity(
     val rating: BigDecimal = BigDecimal.ZERO,
     val photoUrl: String
 ) {
+    @Id
+    var bookId: Long? = null
     var status: BookStatus = BookStatus.AVAILABLE
 }

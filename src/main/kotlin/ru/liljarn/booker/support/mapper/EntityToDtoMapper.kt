@@ -1,6 +1,7 @@
 package ru.liljarn.booker.support.mapper
 
 import org.springframework.data.domain.Page
+import ru.liljarn.booker.support.security.userId
 import ru.liljarn.booker.domain.model.dto.*
 import ru.liljarn.booker.domain.model.entity.*
 import ru.liljarn.gandalf.user.UserDataResponse
@@ -17,26 +18,31 @@ fun AuthorEntity.toDto(): Author = Author(
     photoUrl = authorPhotoUrl
 )
 
-inline fun Page<CommentEntity>.toDto(getUserData: (UUID) -> UserDataResponse): CommentPage = CommentPage(
+inline fun Page<CommentEntity>.toDto(userId: UUID?, getUserData: (UUID) -> UserDataResponse): CommentPage = CommentPage(
     total = totalElements,
-    comments = content.map { comment -> comment.toDto(getUserData.invoke(comment.userId)) }
+    comments = content.map { comment -> comment.toDto(userId, getUserData.invoke(comment.userId)) }
 )
 
-fun CommentEntity.toDto(userData: UserDataResponse): Comment = Comment(
+fun CommentEntity.toDto(userId: UUID?, userData: UserDataResponse): Comment = Comment(
     commentId = commentId,
     userData = userData.toUserData(),
     comment = comment,
     rating = rating,
-    bookId = bookId
+    bookId = bookId,
+    self = userData.userId == userId
 )
 
-inline fun CommentEntity.toDto(getUserData: (UUID) -> UserDataResponse): Comment = Comment(
-    commentId = commentId,
-    userData = getUserData.invoke(this.userId).toUserData(),
-    comment = comment,
-    rating = rating,
-    bookId = bookId
-)
+inline fun CommentEntity.toDto(userId: UUID?, getUserData: (UUID) -> UserDataResponse): Comment =
+    getUserData.invoke(this.userId).toUserData().let {
+        Comment (
+            commentId = commentId,
+            userData = it,
+            comment = comment,
+            rating = rating,
+            bookId = bookId,
+            self = it.userId == userId
+        )
+    }
 
 fun List<Book>.toDto(total: Long): BookPage = BookPage(
     total = total,
@@ -44,7 +50,7 @@ fun List<Book>.toDto(total: Long): BookPage = BookPage(
 )
 
 fun GenreEntity.toDto(): Genre = Genre(
-    genreId = genreId,
+    genreId = genreId ?: throw RuntimeException(),
     genreName = genreName,
 )
 
@@ -53,4 +59,9 @@ fun ReservationEntity.toDto(): ClientReservation = ClientReservation(
     bookId = bookId,
     userId = userId,
     dueDate = dueDate
+)
+
+fun List<BookManagement>.toPage(total: Long): BookManagementPage = BookManagementPage(
+    total = total,
+    managementBooks = this
 )

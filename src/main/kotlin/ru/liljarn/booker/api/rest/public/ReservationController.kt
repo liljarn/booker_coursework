@@ -2,7 +2,7 @@ package ru.liljarn.booker.api.rest.public
 
 import org.springframework.web.bind.annotation.*
 import ru.liljarn.booker.api.model.request.ReservationRequest
-import ru.liljarn.booker.api.security.userContext
+import ru.liljarn.booker.support.security.userContext
 import ru.liljarn.booker.domain.service.ReservationService
 
 @RestController

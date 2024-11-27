@@ -1,4 +1,4 @@
-package ru.liljarn.booker.api.security
+package ru.liljarn.booker.support.security
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry

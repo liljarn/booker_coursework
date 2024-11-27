@@ -2,7 +2,8 @@ package ru.liljarn.booker.api.rest.public
 
 import org.springframework.web.bind.annotation.*
 import ru.liljarn.booker.api.model.request.CommentRequest
-import ru.liljarn.booker.api.security.userContext
+import ru.liljarn.booker.support.security.softUserContext
+import ru.liljarn.booker.support.security.userContext
 import ru.liljarn.booker.domain.service.CommentService
 import java.util.*
 
@@ -13,8 +14,9 @@ class CommentController(
 ) {
 
     @GetMapping("/{bookId}")
-    fun getBookComments(@PathVariable bookId: Long, @RequestParam page: Int) =
+    fun getBookComments(@PathVariable bookId: Long, @RequestParam page: Int) = softUserContext {
         commentService.getBookComments(bookId, page)
+    }
 
     @GetMapping("/user")
     fun getUserComments(@RequestParam page: Int) = userContext {

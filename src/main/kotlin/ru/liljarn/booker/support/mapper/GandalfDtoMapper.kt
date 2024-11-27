@@ -1,6 +1,6 @@
 package ru.liljarn.booker.support.mapper
 
-import ru.liljarn.booker.api.security.userId
+import ru.liljarn.booker.support.security.userId
 import ru.liljarn.booker.domain.model.dto.UserData
 import ru.liljarn.gandalf.user.UserDataResponse
 import java.time.Instant

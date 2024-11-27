@@ -3,8 +3,8 @@ package ru.liljarn.booker.domain.service
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.liljarn.booker.api.model.request.ReservationRequest
-import ru.liljarn.booker.api.security.user
-import ru.liljarn.booker.api.security.userId
+import ru.liljarn.booker.support.security.user
+import ru.liljarn.booker.support.security.userId
 import ru.liljarn.booker.domain.model.entity.ReservationEntity
 import ru.liljarn.booker.domain.model.type.BookStatus
 import ru.liljarn.booker.domain.repository.BookRepository

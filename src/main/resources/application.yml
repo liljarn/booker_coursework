@@ -34,3 +34,11 @@ jobs:
   reservationCheck:
     cron: "0 0 0 * * ?"
     enabled: true
+
+kafka:
+  properties:
+    bootstrapServer: localhost:29092
+
+  topics:
+    notification:
+      destination: okarun.notifications

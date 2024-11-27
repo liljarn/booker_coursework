@@ -7,5 +7,6 @@ data class Comment(
     val userData: UserData,
     val comment: String,
     val rating: Int,
-    val bookId: Long
+    val bookId: Long,
+    val self: Boolean
 )

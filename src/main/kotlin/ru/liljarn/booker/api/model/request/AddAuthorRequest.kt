@@ -4,5 +4,5 @@ import org.springframework.web.multipart.MultipartFile
 
 data class AddAuthorRequest(
     val authorName: String,
-    val authorPhoto: MultipartFile?
+    val authorPhoto: MultipartFile
 )

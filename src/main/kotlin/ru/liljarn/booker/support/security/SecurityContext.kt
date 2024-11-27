@@ -1,6 +1,6 @@
-package ru.liljarn.booker.api.security
+package ru.liljarn.booker.support.security
 
-import ru.liljarn.booker.api.security.SecurityContextHolder.securityContext
+import ru.liljarn.booker.support.security.SecurityContextHolder.securityContext
 import ru.liljarn.gandalf.user.UserDataResponse
 
 object SecurityContextHolder {

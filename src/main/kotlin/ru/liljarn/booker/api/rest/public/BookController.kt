@@ -1,7 +1,7 @@
 package ru.liljarn.booker.api.rest.public
 
 import org.springframework.web.bind.annotation.*
-import ru.liljarn.booker.api.security.softUserContext
+import ru.liljarn.booker.support.security.softUserContext
 import ru.liljarn.booker.domain.service.BookService
 
 @RestController

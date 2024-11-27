@@ -97,6 +97,9 @@ dependencies {
 
     // Logging
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+
+    // Apache Kafka
+    implementation("org.springframework.kafka:spring-kafka")
 }
 
 kotlin {

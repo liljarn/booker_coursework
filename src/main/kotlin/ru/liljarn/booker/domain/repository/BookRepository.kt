@@ -50,6 +50,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         JOIN book_genre bg ON bg.book_id = b.book_id
         JOIN genre g ON g.genre_id = bg.genre_id
         WHERE a.author_id = :id
+        AND b.status != 'NOT_AVAILABLE'
         GROUP BY b.book_id, a.author_id
         ORDER BY b.book_id
         LIMIT :limit OFFSET :offset;
@@ -60,7 +61,13 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         @Param("offset") offset: Long
     ): List<Book>
 
-    fun countByAuthorId(authorId: Long): Long
+    @Query("""
+        SELECT COUNT(*)
+        FROM book b
+        WHERE b.author_id = :id
+        AND b.status != 'NOT_AVAILABLE'
+    """)
+    fun countByAuthorId(@Param("id") authorId: Long): Long
 
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
@@ -76,6 +83,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         JOIN book_genre bg ON bg.book_id = b.book_id
         JOIN genre g ON g.genre_id = bg.genre_id
         WHERE g.genre_id = :id
+        AND b.status != 'NOT_AVAILABLE'
         GROUP BY b.book_id, a.author_id
         ORDER BY b.book_id
         LIMIT :limit OFFSET :offset;
@@ -90,6 +98,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         SELECT COUNT(DISTINCT b.book_id)
         FROM book b
         JOIN book_genre bg ON bg.book_id = b.book_id
+        AND b.status != 'NOT_AVAILABLE'
         WHERE bg.genre_id = :id
     """)
     fun countByGenreId(@Param("id") genreId: Long): Long
@@ -114,6 +123,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
             OR (a.author_name % :authorName AND SIMILARITY(a.author_name, LOWER(:authorName)) > 0.4)
         )
         AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
+        AND b.status != 'NOT_AVAILABLE'
         GROUP BY b.book_id, a.author_id
         ORDER BY b.book_id
         LIMIT :limit OFFSET :offset;
@@ -127,6 +137,43 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
     ): List<Book>
 
     @Query("""
+        SELECT b.book_id, b.book_name, a.author_id, a.author_name,
+            a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
+            rq.user_id AS rent_user_id, brq.user_id AS reservation_user_id,
+            jsonb_agg(
+                jsonb_build_object(
+                    'genreId', g.genre_id,
+                    'genreName', g.genre_name
+                )
+            ) AS genres
+        FROM book b
+        JOIN author a ON b.author_id = a.author_id
+        JOIN book_genre bg ON bg.book_id = b.book_id
+        JOIN genre g ON g.genre_id = bg.genre_id
+        LEFT JOIN book_rent_queue rq ON rq.book_id = b.book_id
+        LEFT JOIN book_reservation_queue brq ON brq.book_id = b.book_id
+        WHERE (:bookName IS NULL OR LOWER(b.book_name) LIKE CONCAT('%', LOWER(:bookName), '%'))
+        AND (
+            :authorName IS NULL
+            OR LOWER(a.author_name) LIKE CONCAT('%', LOWER(:authorName), '%')
+            OR (a.author_name % :authorName AND SIMILARITY(a.author_name, LOWER(:authorName)) > 0.4)
+        )
+        AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
+        AND b.status = :status
+        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id
+        ORDER BY b.book_id
+        LIMIT :limit OFFSET :offset;
+    """)
+    fun findManagementPage(
+        @Param("status") bookStatus: BookStatus,
+        @Param("bookName") bookName: String?,
+        @Param("authorName") authorName: String?,
+        @Param("genres") genres: List<Int>?,
+        @Param("limit") limit: Int,
+        @Param("offset") offset: Long
+    ): List<BookInfo>
+
+    @Query("""
         SELECT COUNT(DISTINCT b.book_id)
         FROM book b
         JOIN author a ON b.author_id = a.author_id
@@ -138,6 +185,28 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
             OR (a.author_name % :authorName AND SIMILARITY(a.author_name, LOWER(:authorName)) > 0.4)
         )
         AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
+        AND b.status = :status
+    """)
+    fun countManagement(
+        @Param("status") bookStatus: BookStatus,
+        @Param("bookName") bookName: String?,
+        @Param("authorName") authorName: String?,
+        @Param("genres") genres: List<Int>?
+    ): Long
+
+    @Query("""
+        SELECT COUNT(DISTINCT b.book_id)
+        FROM book b
+        JOIN author a ON b.author_id = a.author_id
+        JOIN book_genre bg ON bg.book_id = b.book_id
+        WHERE (:bookName IS NULL OR LOWER(b.book_name) LIKE CONCAT('%', LOWER(:bookName), '%'))
+        AND (
+            :authorName IS NULL
+            OR LOWER(a.author_name) LIKE CONCAT('%', LOWER(:authorName), '%')
+            OR (a.author_name % :authorName AND SIMILARITY(a.author_name, LOWER(:authorName)) > 0.4)
+        )
+        AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
+        AND b.status != 'NOT_AVAILABLE'
     """)
     fun countWithAllParams(
         @Param("bookName") bookName: String?,
@@ -174,6 +243,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         JOIN genre g ON g.genre_id = bg.genre_id
         JOIN book_reservation_queue brq ON b.book_id = brq.book_id
         WHERE brq.user_id = :id
+        AND b.status != 'NOT_AVAILABLE'
         GROUP BY b.book_id, a.author_id
         ORDER BY b.book_id
         LIMIT :limit OFFSET :offset;
@@ -189,6 +259,14 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         FROM book b
         JOIN book_reservation_queue brq ON b.book_id = brq.book_id
         WHERE brq.user_id = :id
+        AND b.status != 'NOT_AVAILABLE'
     """)
     fun countRentedBooksByUserId(@Param("id") userId: UUID): Long
+
+    @Modifying
+    @Query("""
+        INSERT INTO book_genre(book_id, genre_id)
+        VALUES (:bookId, unnest(array[:genres]))
+    """)
+    fun linkWithGenres(bookId: Long, genres: List<Int>)
 }

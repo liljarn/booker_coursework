@@ -1,4 +1,4 @@
-package ru.liljarn.booker.api.rest.management.support
+package ru.liljarn.booker.support.reflection
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)

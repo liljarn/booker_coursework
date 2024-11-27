@@ -2,8 +2,9 @@ package ru.liljarn.booker.domain.service
 
 import org.springframework.stereotype.Service
 import ru.liljarn.booker.api.model.request.CommentRequest
-import ru.liljarn.booker.api.security.user
-import ru.liljarn.booker.api.security.userId
+import ru.liljarn.booker.support.security.nullableUser
+import ru.liljarn.booker.support.security.user
+import ru.liljarn.booker.support.security.userId
 import ru.liljarn.booker.domain.model.entity.CommentEntity
 import ru.liljarn.booker.domain.repository.CommentRepository
 import ru.liljarn.booker.infrastructure.grpc.GandalfService
@@ -18,13 +19,13 @@ class CommentService(
 ) {
     fun getBookComments(bookId: Long, page: Int) = pageRequest(page) {
         commentRepository.findAllByBookId(it, bookId)
-    }.toDto { uuid ->
+    }.toDto(nullableUser?.userId) { uuid ->
         getUserData(uuid)
     }
 
     fun getUserComments(page: Int) = pageRequest(page) {
         commentRepository.findAllByUserId(it, user.userId)
-    }.toDto { uuid ->
+    }.toDto(user.userId) { uuid ->
         getUserData(uuid)
     }
 
@@ -36,7 +37,7 @@ class CommentService(
         bookId = bookId
     ).apply {
         commentRepository.save(this)
-    }.toDto { uuid ->
+    }.toDto(user.userId) { uuid ->
         getUserData(uuid)
     }
 

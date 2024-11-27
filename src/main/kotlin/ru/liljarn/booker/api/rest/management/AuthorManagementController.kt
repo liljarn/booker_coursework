@@ -2,7 +2,7 @@ package ru.liljarn.booker.api.rest.management
 
 import org.springframework.web.bind.annotation.*
 import ru.liljarn.booker.api.model.request.AddAuthorRequest
-import ru.liljarn.booker.api.rest.management.support.ManagementApi
+import ru.liljarn.booker.support.reflection.ManagementApi
 import ru.liljarn.booker.domain.service.AuthorService
 
 @ManagementApi

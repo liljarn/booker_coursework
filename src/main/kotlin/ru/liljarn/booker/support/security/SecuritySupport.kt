@@ -1,4 +1,4 @@
-package ru.liljarn.booker.api.security
+package ru.liljarn.booker.support.security
 
 import ru.liljarn.gandalf.user.UserDataResponse
 import java.util.UUID

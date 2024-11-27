@@ -1,4 +1,4 @@
-package ru.liljarn.booker.api.rest.management.support
+package ru.liljarn.booker.support.reflection
 
 import org.aspectj.lang.JoinPoint
 import org.aspectj.lang.annotation.Aspect
@@ -16,7 +16,7 @@ class ManagementValidationAspect(
     private val managementValidationHandlerSupport: ManagementValidationHandlerSupport
 ) {
 
-    @Pointcut("within(@ru.liljarn.booker.api.rest.management.support.ManagementApi *)")
+    @Pointcut("within(@ru.liljarn.booker.support.reflection.ManagementApi *)")
     fun classWithManagementApiAnnotation() {}
 
     @Before("classWithManagementApiAnnotation()")

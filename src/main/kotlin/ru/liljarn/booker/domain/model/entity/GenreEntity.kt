@@ -5,7 +5,8 @@ import org.springframework.data.relational.core.mapping.Table
 
 @Table("genre")
 data class GenreEntity(
-    @Id
-    val genreId : Long,
     val genreName: String
-)
+) {
+    @Id
+    var genreId: Int? = null
+}

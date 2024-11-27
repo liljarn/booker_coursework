@@ -1,11 +1,11 @@
-package ru.liljarn.booker.api.security
+package ru.liljarn.booker.support.security
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
-import ru.liljarn.booker.api.security.SecurityContextHolder.createContext
+import ru.liljarn.booker.support.security.SecurityContextHolder.createContext
 import ru.liljarn.booker.infrastructure.grpc.GandalfService
 
 @Component

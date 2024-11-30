@@ -19,17 +19,20 @@ class BookManagementController(
     @DeleteMapping("/{bookId}")
     fun deleteBook(@PathVariable bookId: Long) = bookService.markAsDeleted(bookId)
 
-    @PutMapping("/{bookId}")
-    fun updateBook(@PathVariable bookId: Long) {
-
-    }
-
     @GetMapping("/{status}")
-    fun getManagementBooksPage(
+    fun getManagementBooksPageWithStatus(
         @PathVariable status: BookStatus,
         @RequestParam page: Int,
         @RequestParam bookName: String?,
         @RequestParam author: String?,
         @RequestParam genres: List<Int>?
-    ) = bookService.findManagementBooksPage(page, status, bookName, author, genres)
+    ) = bookService.findManagementBooksPageWithStatus(page, status, bookName, author, genres)
+
+    @GetMapping
+    fun getManagementBooksPage(
+        @RequestParam page: Int,
+        @RequestParam bookName: String?,
+        @RequestParam author: String?,
+        @RequestParam genres: List<Int>?
+    ) = bookService.findManagementBooksPage(page, bookName, author, genres)
 }

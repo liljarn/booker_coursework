@@ -1,7 +1,6 @@
 package ru.liljarn.booker.api.rest.public
 
 import org.springframework.web.bind.annotation.*
-import ru.liljarn.booker.api.model.request.ReservationRequest
 import ru.liljarn.booker.support.security.userContext
 import ru.liljarn.booker.domain.service.ReservationService
 
@@ -11,8 +10,8 @@ class ReservationController(
     private val reservationService: ReservationService
 ) {
     @PostMapping("/{bookId}")
-    fun reserveBook(@PathVariable bookId: Long, @RequestBody dateRequest: ReservationRequest) = userContext {
-        reservationService.reserveBook(bookId, dateRequest)
+    fun reserveBook(@PathVariable bookId: Long) = userContext {
+        reservationService.reserveBook(bookId)
     }
 
     @DeleteMapping
@@ -20,8 +19,8 @@ class ReservationController(
         reservationService.removeClientReservation()
     }
 
-    @GetMapping
-    fun getReservation() = userContext {
-        reservationService.getClientReservation()
-    }
+//    @GetMapping
+//    fun getReservation() = userContext {
+//        reservationService.getClientReservation()
+//    }
 }

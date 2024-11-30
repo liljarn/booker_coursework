@@ -12,19 +12,32 @@ import org.springframework.web.context.request.ServletRequestAttributes
 
 @Aspect
 @Component
-class ManagementValidationAspect(
-    private val managementValidationHandlerSupport: ManagementValidationHandlerSupport
+class ApiValidationAspect(
+    private val validationHandler: ValidationHandler
 ) {
 
     @Pointcut("within(@ru.liljarn.booker.support.reflection.ManagementApi *)")
-    fun classWithManagementApiAnnotation() {}
+    fun classWithManagementApiAnnotation() {
+    }
 
     @Before("classWithManagementApiAnnotation()")
     fun checkHeaderBeforeMethod(joinPoint: JoinPoint) {
         val request = (RequestContextHolder.currentRequestAttributes() as? ServletRequestAttributes)?.request
 
-        if (request != null && !managementValidationHandlerSupport.validateHeader(request)) {
+        if (request != null && !validationHandler.validateHeader(request)) {
             throw InvalidHeaderException("Invalid or missing management API header")
+        }
+    }
+
+    @Pointcut("@annotation(internalApi)")
+    fun methodWithInternalApiAnnotation(internalApi: InternalApi) {}
+
+    @Before("@annotation(internalApi)")
+    fun checkHeaderBeforeMethod(joinPoint: JoinPoint, internalApi: InternalApi) {
+        val request = (RequestContextHolder.currentRequestAttributes() as? ServletRequestAttributes)?.request
+
+        if (request != null && !validationHandler.validateInternalHeader(request, internalApi)) {
+            throw InvalidHeaderException("Invalid or missing internal API header")
         }
     }
 }

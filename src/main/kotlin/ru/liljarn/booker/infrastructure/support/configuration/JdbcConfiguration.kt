@@ -1,4 +1,4 @@
-package ru.liljarn.booker.support.configuration
+package ru.liljarn.booker.infrastructure.support.configuration
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.converter.Converter

@@ -3,6 +3,7 @@ package ru.liljarn.booker.domain.model.dto
 import org.springframework.data.annotation.Reference
 import ru.liljarn.booker.domain.model.type.BookStatus
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.*
 
 data class BookInfo(
@@ -19,6 +20,8 @@ data class BookInfo(
     val status: BookStatus = BookStatus.AVAILABLE,
     val rentUserId: UUID?,
     val reservationUserId: UUID?,
+    val rentDueDate: LocalDate?,
+    val reservationDueDate: LocalDate?,
     @Reference
     val genres: ArrayList<Genre>
 )

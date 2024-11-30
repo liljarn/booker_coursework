@@ -2,32 +2,37 @@ package ru.liljarn.booker.domain.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import ru.liljarn.booker.api.model.request.ReservationRequest
-import ru.liljarn.booker.support.security.user
-import ru.liljarn.booker.support.security.userId
+import ru.liljarn.booker.domain.model.dto.notifications.NewReservationNotificationEvent
 import ru.liljarn.booker.domain.model.entity.ReservationEntity
 import ru.liljarn.booker.domain.model.type.BookStatus
+import ru.liljarn.booker.domain.model.type.NotificationType
+import ru.liljarn.booker.domain.repository.AuthorRepository
 import ru.liljarn.booker.domain.repository.BookRepository
 import ru.liljarn.booker.domain.repository.ReservationRepository
-import ru.liljarn.booker.support.mapper.toDto
+import ru.liljarn.booker.support.security.user
+import ru.liljarn.booker.support.security.userId
 import java.time.LocalDate
 import java.util.*
 
 @Service
 class ReservationService(
     private val reservationRepository: ReservationRepository,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val authorRepository: AuthorRepository,
+    private val notificationService: NotificationService
 ) {
 
     @Transactional
-    fun reserveBook(bookId: Long, request: ReservationRequest) {
+    fun reserveBook(bookId: Long) {
         if (reservationRepository.existsByUserId(user.userId)) throw RuntimeException()
+
+        val dueDate = LocalDate.now().plusDays(3)
 
         val reservationEntity = ReservationEntity(
             reservationId = UUID.randomUUID(),
             bookId = bookId,
             userId = user.userId,
-            dueDate = request.dueDate,
+            dueDate = dueDate
         )
 
         reservationRepository.makeReservation(reservationEntity)
@@ -36,7 +41,18 @@ class ReservationService(
             bookRepository.findById(bookId).get().apply {
                 status = BookStatus.BOOKED
             }
-        )
+        ).also {
+            notificationService.sendNotification(
+                NewReservationNotificationEvent(
+                    email = user.email,
+                    eventType = NotificationType.NEW_RESERVATION,
+                    firstName = user.firstName,
+                    bookName = it.bookName,
+                    authorName = authorRepository.findAuthorNameByAuthorId(it.authorId),
+                    dueDate = dueDate
+                )
+            )
+        }
     }
 
     @Transactional
@@ -56,6 +72,4 @@ class ReservationService(
         bookRepository.updateBookStatus(it.bookId, BookStatus.AVAILABLE)
         reservationRepository.delete(it)
     }
-
-    fun getClientReservation() = reservationRepository.findByUserId(user.userId)?.toDto()
 }

@@ -1,6 +1,5 @@
 package ru.liljarn.booker.domain.service
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,10 +15,6 @@ import ru.liljarn.booker.support.pageRequest
 import ru.liljarn.booker.support.security.nullableUser
 import ru.liljarn.booker.support.security.userId
 import java.util.*
-
-private val logger = KotlinLogging.logger {}
-
-private val BOOK_CONTAINS_CLIENT_STATUS = hashSetOf(BookStatus.BOOKED, BookStatus.READING)
 
 @Service
 class BookService(
@@ -69,24 +64,41 @@ class BookService(
     @Transactional(readOnly = true)
     fun findManagementBooksPage(
         page: Int,
+        bookName: String?,
+        author: String?,
+        genres: List<Int>?
+    ) = pageRequest(page) {
+        val booksPage =
+            bookRepository.findManagementPage(bookName, author, genres, it.pageSize, it.offset)
+
+        booksPage.map { bookInfo ->
+            BookManagement(
+                book = bookInfo.toBook(),
+                userData = getUserDataResponse(bookInfo.rentUserId, bookInfo.reservationUserId)?.toUserData(),
+                dueDate = bookInfo.rentDueDate ?: bookInfo.reservationDueDate
+            )
+        }
+    }.toPage(bookRepository.countManagement(bookName, author, genres))
+
+    @Transactional(readOnly = true)
+    fun findManagementBooksPageWithStatus(
+        page: Int,
         status: BookStatus,
         bookName: String?,
         author: String?,
         genres: List<Int>?
     ) = pageRequest(page) {
-        val booksPage = bookRepository.findManagementPage(status, bookName, author, genres, it.pageSize, it.offset)
+        val booksPage =
+            bookRepository.findManagementPageWithStatus(status, bookName, author, genres, it.pageSize, it.offset)
 
-        if (BOOK_CONTAINS_CLIENT_STATUS.contains(status)) {
-            booksPage.map { bookInfo ->
-                BookManagement(
-                    bookInfo.toBook(),
-                    getUserDataResponse(bookInfo.rentUserId, bookInfo.reservationUserId)?.toUserData()
-                )
-            }
-        } else {
-            booksPage.map { bookInfo -> BookManagement(bookInfo.toBook(), null) }
+        booksPage.map { bookInfo ->
+            BookManagement(
+                book = bookInfo.toBook(),
+                userData = getUserDataResponse(bookInfo.rentUserId, bookInfo.reservationUserId)?.toUserData(),
+                dueDate = bookInfo.rentDueDate ?: bookInfo.reservationDueDate
+            )
         }
-    }.toPage(bookRepository.countManagement(status, bookName, author, genres))
+    }.toPage(bookRepository.countManagementWithStatus(status, bookName, author, genres))
 
     @Transactional
     fun addBook(authorId: Long, request: AddBookRequest) {

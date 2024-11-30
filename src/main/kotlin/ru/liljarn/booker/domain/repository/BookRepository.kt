@@ -18,6 +18,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
             a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
             rq.user_id AS rent_user_id, brq.user_id AS reservation_user_id,
+            rq.due_date AS rent_due_date, brq.due_date AS reservation_due_date,
             jsonb_agg(
                 jsonb_build_object(
                     'genreId', g.genre_id,
@@ -31,7 +32,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         LEFT JOIN book_rent_queue rq ON rq.book_id = b.book_id
         LEFT JOIN book_reservation_queue brq ON brq.book_id = b.book_id
         WHERE b.book_id = :id
-        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id
+        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date
         ORDER BY b.book_id;
     """)
     fun findByBookId(@Param("id") bookId: Long): BookInfo?
@@ -140,6 +141,61 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
             a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
             rq.user_id AS rent_user_id, brq.user_id AS reservation_user_id,
+            rq.due_date AS rent_due_date, brq.due_date AS reservation_due_date,
+            jsonb_agg(
+                jsonb_build_object(
+                    'genreId', g.genre_id,
+                    'genreName', g.genre_name
+                )
+            ) AS genres
+        FROM book b
+        JOIN author a ON b.author_id = a.author_id
+        JOIN book_genre bg ON bg.book_id = b.book_id
+        JOIN genre g ON g.genre_id = bg.genre_id
+        LEFT JOIN book_rent_queue rq ON rq.book_id = b.book_id
+        LEFT JOIN book_reservation_queue brq ON brq.book_id = b.book_id
+        WHERE (:bookName IS NULL OR LOWER(b.book_name) LIKE CONCAT('%', LOWER(:bookName), '%'))
+        AND (
+            :authorName IS NULL
+            OR LOWER(a.author_name) LIKE CONCAT('%', LOWER(:authorName), '%')
+            OR (a.author_name % :authorName AND SIMILARITY(a.author_name, LOWER(:authorName)) > 0.4)
+        )
+        AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
+        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date
+        ORDER BY b.book_id
+        LIMIT :limit OFFSET :offset;
+    """)
+    fun findManagementPage(
+        @Param("bookName") bookName: String?,
+        @Param("authorName") authorName: String?,
+        @Param("genres") genres: List<Int>?,
+        @Param("limit") limit: Int,
+        @Param("offset") offset: Long
+    ): List<BookInfo>
+
+    @Query("""
+        SELECT COUNT(DISTINCT b.book_id)
+        FROM book b
+        JOIN author a ON b.author_id = a.author_id
+        JOIN book_genre bg ON bg.book_id = b.book_id
+        WHERE (:bookName IS NULL OR LOWER(b.book_name) LIKE CONCAT('%', LOWER(:bookName), '%'))
+        AND (
+            :authorName IS NULL
+            OR LOWER(a.author_name) LIKE CONCAT('%', LOWER(:authorName), '%')
+            OR (a.author_name % :authorName AND SIMILARITY(a.author_name, LOWER(:authorName)) > 0.4)
+        )
+        AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
+    """)
+    fun countManagement(
+        @Param("bookName") bookName: String?,
+        @Param("authorName") authorName: String?,
+        @Param("genres") genres: List<Int>?
+    ): Long
+
+    @Query("""
+        SELECT b.book_id, b.book_name, a.author_id, a.author_name,
+            a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
+            rq.user_id AS rent_user_id, brq.user_id AS reservation_user_id,
             jsonb_agg(
                 jsonb_build_object(
                     'genreId', g.genre_id,
@@ -160,11 +216,11 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         )
         AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
         AND b.status = :status
-        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id
+        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date
         ORDER BY b.book_id
         LIMIT :limit OFFSET :offset;
     """)
-    fun findManagementPage(
+    fun findManagementPageWithStatus(
         @Param("status") bookStatus: BookStatus,
         @Param("bookName") bookName: String?,
         @Param("authorName") authorName: String?,
@@ -187,7 +243,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
         AND b.status = :status
     """)
-    fun countManagement(
+    fun countManagementWithStatus(
         @Param("status") bookStatus: BookStatus,
         @Param("bookName") bookName: String?,
         @Param("authorName") authorName: String?,

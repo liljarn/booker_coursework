@@ -15,7 +15,13 @@ spring:
 
 api:
   management:
+    header: "X-MANAGEMENT-API"
     key: "BOOKER"
+  internal:
+    header: "X-INTERNAL-API"
+    services:
+      gandalf: "GANDALF_INTERNAL_KEY"
+      okarun: "OKARUN_INTERNAL_KEY"
 
 grpc:
   client:
@@ -32,13 +38,26 @@ minio:
 
 jobs:
   reservationCheck:
-    cron: "0 0 0 * * ?"
+    cron: "0/20 * * * * ?"
     enabled: true
 
 kafka:
-  properties:
-    bootstrapServer: localhost:29092
-
   topics:
     notification:
       destination: okarun.notifications
+  clusters:
+    default:
+      bootstrap-servers:
+        - localhost:29092
+      properties:
+        acks: -1
+        delivery.timeout.ms: 90000
+        batch.size: 10240
+        linger.ms: 100
+        max.in.flight.requests.per.connection: 5
+        enable.idempotence: true
+      producer:
+        client-id: liljarn.gandalf
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      security:
+        protocol: PLAINTEXT

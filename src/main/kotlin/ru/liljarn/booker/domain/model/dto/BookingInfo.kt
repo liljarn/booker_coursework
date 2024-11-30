@@ -3,9 +3,8 @@ package ru.liljarn.booker.domain.model.dto
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
-data class BookManagement(
+data class BookingInfo(
     val book: Book,
-    val userData: UserData?,
     @JsonFormat(pattern = "yyyy-MM-dd")
-    val dueDate: LocalDate?
+    val dueDate: LocalDate,
 )

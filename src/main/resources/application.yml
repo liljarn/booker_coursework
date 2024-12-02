@@ -38,7 +38,7 @@ minio:
 
 jobs:
   reservationCheck:
-    cron: "0/20 * * * * ?"
+    cron: "0 0 0 * * ?"
     enabled: true
 
 kafka:

@@ -107,8 +107,8 @@ class BookService(
         val bookEntity = BookEntity(
             bookName = request.bookName,
             authorId = authorId,
-            releaseYear = request.releaseYear,
-            ageLimit = request.ageLimit,
+            releaseYear = request.releaseYear.toShort(),
+            ageLimit = request.ageLimit.toShort(),
             description = request.description,
             photoUrl = photoUrl
         )

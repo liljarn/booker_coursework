@@ -26,5 +26,5 @@ class MinioImageComponent(
 
 
     fun getImageUrl(bucket: String, name: String) =
-        "${clientProperties.url}/$bucket/$name"
+        "${clientProperties.url}/$bucket/${name.replace(" ", "%20")}"
 }

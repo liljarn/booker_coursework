@@ -148,8 +148,15 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
             a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
-            rq.user_id AS rent_user_id, brq.user_id AS reservation_user_id,
-            rq.due_date AS rent_due_date, brq.due_date AS reservation_due_date,
+            brq.user_id AS reservation_user_id,
+            CASE 
+                WHEN rq.deleted_at IS NOT NULL THEN NULL 
+                ELSE rq.user_id 
+            END AS rent_user_id,
+            CASE 
+                WHEN rq.deleted_at IS NOT NULL THEN NULL 
+                ELSE rq.due_date 
+            END AS rent_due_date, brq.due_date AS reservation_due_date,
             jsonb_agg(
                 jsonb_build_object(
                     'genreId', g.genre_id,
@@ -169,8 +176,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
             OR (a.author_name % :authorName AND SIMILARITY(a.author_name, LOWER(:authorName)) > 0.4)
         )
         AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
-        AND rq.deleted_at IS NULL
-        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date
+        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date, rq.deleted_at
         ORDER BY b.book_id
         LIMIT :limit OFFSET :offset;
     """)
@@ -204,7 +210,15 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
             a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
-            rq.user_id AS rent_user_id, brq.user_id AS reservation_user_id,
+            brq.user_id AS reservation_user_id,
+            CASE 
+                WHEN rq.deleted_at IS NOT NULL THEN NULL 
+                ELSE rq.user_id 
+            END AS rent_user_id,
+            CASE 
+                WHEN rq.deleted_at IS NOT NULL THEN NULL 
+                ELSE rq.due_date 
+            END AS rent_due_date, brq.due_date AS reservation_due_date,
             jsonb_agg(
                 jsonb_build_object(
                     'genreId', g.genre_id,
@@ -225,8 +239,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         )
         AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
         AND b.status = :status
-        AND rq.deleted_at IS NULL
-        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date
+        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date, rq.deleted_at
         ORDER BY b.book_id
         LIMIT :limit OFFSET :offset;
     """)

@@ -4,6 +4,7 @@ import org.springframework.data.jdbc.repository.query.Modifying
 import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
+import ru.liljarn.booker.domain.model.dto.ReservationInfo
 import ru.liljarn.booker.domain.model.entity.ReservationEntity
 import java.time.LocalDate
 import java.util.*
@@ -35,4 +36,11 @@ interface ReservationRepository : CrudRepository<ReservationEntity, UUID> {
     fun findByUserId(userId: UUID): ReservationEntity?
 
     fun existsByUserId(userId: UUID): Boolean
+
+    @Query("""
+        SELECT b.book_id, brq.user_id, brq.due_date FROM book_reservation_queue brq
+        RIGHT JOIN book b ON b.book_id = brq.book_id 
+        WHERE b.book_id IN (:bookIds)
+    """)
+    fun findReservationInfo(bookIds: List<Long>): List<ReservationInfo>
 }

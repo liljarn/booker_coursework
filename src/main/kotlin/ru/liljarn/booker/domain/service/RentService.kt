@@ -10,7 +10,7 @@ import ru.liljarn.booker.domain.repository.BookRepository
 import ru.liljarn.booker.domain.repository.RentRepository
 import ru.liljarn.booker.domain.repository.ReservationRepository
 import ru.liljarn.booker.infrastructure.grpc.GandalfService
-import ru.liljarn.booker.support.mapper.toDto
+import ru.liljarn.booker.support.mapper.toPage
 import ru.liljarn.booker.support.mapper.toUserData
 import ru.liljarn.booker.support.pageRequest
 import java.time.LocalDate
@@ -73,6 +73,6 @@ class RentService(
     @Transactional(readOnly = true)
     fun getClientRentHistory(page: Int, userId: UUID) = pageRequest(page) {
         bookRepository.findRentedBooksByUserId(userId, it.pageSize, it.offset)
-            .toDto(bookRepository.countRentedBooksByUserId(userId))
+            .toPage(bookRepository.countRentedBooksByUserId(userId))
     }
 }

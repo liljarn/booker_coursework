@@ -9,6 +9,7 @@ import ru.liljarn.booker.domain.model.entity.CommentEntity
 import ru.liljarn.booker.domain.repository.CommentRepository
 import ru.liljarn.booker.infrastructure.grpc.GandalfService
 import ru.liljarn.booker.support.mapper.toDto
+import ru.liljarn.booker.support.mapper.toPage
 import ru.liljarn.booker.support.pageRequest
 import java.util.*
 
@@ -19,13 +20,13 @@ class CommentService(
 ) {
     fun getBookComments(bookId: Long, page: Int) = pageRequest(page) {
         commentRepository.findAllByBookId(it, bookId)
-    }.toDto(nullableUser?.userId) { uuid ->
+    }.toPage(nullableUser?.userId) { uuid ->
         getUserData(uuid)
     }
 
     fun getUserComments(page: Int) = pageRequest(page) {
         commentRepository.findAllByUserId(it, user.userId)
-    }.toDto(user.userId) { uuid ->
+    }.toPage(user.userId) { uuid ->
         getUserData(uuid)
     }
 

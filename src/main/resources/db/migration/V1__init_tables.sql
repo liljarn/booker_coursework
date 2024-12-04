@@ -44,7 +44,7 @@ CREATE TABLE comment
 CREATE TABLE book_rent_queue
 (
     rent_id    UUID PRIMARY KEY,
-    book_id    BIGINT UNIQUE NOT NULL REFERENCES book (book_id),
+    book_id    BIGINT        NOT NULL REFERENCES book (book_id),
     user_id    UUID          NOT NULL,
     due_date   DATE          NOT NULL,
     deleted_at TIMESTAMP

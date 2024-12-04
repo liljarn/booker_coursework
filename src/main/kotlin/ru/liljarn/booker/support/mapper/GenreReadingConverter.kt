@@ -16,4 +16,3 @@ class GenreReadingConverter(
     override fun convert(pgObject: PGobject): ArrayList<Genre> =
         objectMapper.readValue(pgObject.value, object : TypeReference<ArrayList<Genre>>() {})
 }
-

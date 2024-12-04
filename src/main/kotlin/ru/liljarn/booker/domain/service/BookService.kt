@@ -9,6 +9,8 @@ import ru.liljarn.booker.domain.model.dto.BookManagement
 import ru.liljarn.booker.domain.model.entity.BookEntity
 import ru.liljarn.booker.domain.model.type.BookStatus
 import ru.liljarn.booker.domain.repository.BookRepository
+import ru.liljarn.booker.domain.repository.RentRepository
+import ru.liljarn.booker.domain.repository.ReservationRepository
 import ru.liljarn.booker.infrastructure.grpc.GandalfService
 import ru.liljarn.booker.support.mapper.*
 import ru.liljarn.booker.support.pageRequest
@@ -19,37 +21,41 @@ import java.util.*
 @Service
 class BookService(
     private val bookRepository: BookRepository,
+    private val rentRepository: RentRepository,
+    private val reservationRepository: ReservationRepository,
     private val gandalfService: GandalfService,
     @Qualifier("bookMinioImageService")
     private val imageService: ImageService
 ) {
 
     fun findBook(bookId: Long): BookDetailed {
-        val bookInfo = bookRepository.findByBookId(bookId) ?: throw RuntimeException()
-
-        val userDataResponse = getUserDataResponse(bookInfo.rentUserId, bookInfo.reservationUserId)
+        val book = bookRepository.findByBookId(bookId) ?: throw RuntimeException()
+        val userDataResponse = getUserDataResponse(
+            rentRepository.findByBookIdAndDeletedAtIsNull(book.bookId)?.userId,
+            reservationRepository.findByBookId(book.bookId)?.userId,
+        )
 
         val userData = userDataResponse?.toUserData()
 
-        return bookInfo.toBook().toBookDetailed(userData, nullableUser?.userId)
+        return book.toBookDetailed(userData, nullableUser?.userId)
     }
 
     @Transactional(readOnly = true)
     fun findBooksPage(page: Int, bookName: String?, author: String?, genres: List<Int>?) = pageRequest(page) {
         bookRepository.findPageWithAllParams(bookName, author, genres, it.pageSize, it.offset)
-            .toDto(bookRepository.countWithAllParams(bookName, author, genres))
+            .toPage(bookRepository.countWithAllParams(bookName, author, genres))
     }
 
     @Transactional(readOnly = true)
     fun findAuthorBooksPage(authorId: Long, page: Int) = pageRequest(page) {
         bookRepository.findPageByAuthorId(authorId, it.pageSize, it.offset)
-            .toDto(bookRepository.countByAuthorId(authorId))
+            .toPage(bookRepository.countByAuthorId(authorId))
     }
 
     @Transactional(readOnly = true)
     fun findBooksByGenre(genreId: Long, page: Int) = pageRequest(page) {
         bookRepository.findPageByGenreId(genreId, it.pageSize, it.offset)
-            .toDto(bookRepository.countByGenreId(genreId))
+            .toPage(bookRepository.countByGenreId(genreId))
     }
 
     @Transactional
@@ -67,15 +73,23 @@ class BookService(
         bookName: String?,
         author: String?,
         genres: List<Int>?
-    ) = pageRequest(page) {
+    ) = pageRequest(page) { pageRequest ->
         val booksPage =
-            bookRepository.findManagementPage(bookName, author, genres, it.pageSize, it.offset)
+            bookRepository.findManagementPage(bookName, author, genres, pageRequest.pageSize, pageRequest.offset)
+        val bookIds = booksPage.map { it.bookId }
+        val reservationInfoMap = reservationRepository.findReservationInfo(bookIds).associateBy { it.bookId }
+        val rentInfoMap = rentRepository.findRentInfo(bookIds).associateBy { it.bookId }
 
-        booksPage.map { bookInfo ->
+        booksPage.map { book ->
+            val reservationInfo = reservationInfoMap[book.bookId]
+            val rentInfo = rentInfoMap[book.bookId]
             BookManagement(
-                book = bookInfo.toBook(),
-                userData = getUserDataResponse(bookInfo.rentUserId, bookInfo.reservationUserId)?.toUserData(),
-                dueDate = bookInfo.rentDueDate ?: bookInfo.reservationDueDate
+                book = book,
+                userData = getUserDataResponse(
+                    rentInfo?.userId,
+                    reservationInfo?.userId
+                )?.toUserData(),
+                dueDate = rentInfo?.dueDate ?: reservationInfo?.dueDate
             )
         }
     }.toPage(bookRepository.countManagement(bookName, author, genres))
@@ -90,12 +104,20 @@ class BookService(
     ) = pageRequest(page) {
         val booksPage =
             bookRepository.findManagementPageWithStatus(status, bookName, author, genres, it.pageSize, it.offset)
+        val bookIds = booksPage.map { it.bookId }
+        val reservationInfoMap = reservationRepository.findReservationInfo(bookIds).associateBy { it.bookId }
+        val rentInfoMap = rentRepository.findRentInfo(bookIds).associateBy { it.bookId }
 
-        booksPage.map { bookInfo ->
+        booksPage.map { book ->
+            val reservationInfo = reservationInfoMap[book.bookId]
+            val rentInfo = rentInfoMap[book.bookId]
             BookManagement(
-                book = bookInfo.toBook(),
-                userData = getUserDataResponse(bookInfo.rentUserId, bookInfo.reservationUserId)?.toUserData(),
-                dueDate = bookInfo.rentDueDate ?: bookInfo.reservationDueDate
+                book = book,
+                userData = getUserDataResponse(
+                    rentInfo?.userId,
+                    reservationInfo?.userId
+                )?.toUserData(),
+                dueDate = rentInfo?.dueDate ?: reservationInfo?.dueDate
             )
         }
     }.toPage(bookRepository.countManagementWithStatus(status, bookName, author, genres))

@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import ru.liljarn.booker.domain.model.dto.Book
-import ru.liljarn.booker.domain.model.dto.BookInfo
+import ru.liljarn.booker.domain.model.dto.BookHistory
 import ru.liljarn.booker.domain.model.entity.BookEntity
 import ru.liljarn.booker.domain.model.type.BookStatus
 import java.util.*
@@ -17,16 +17,6 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
             a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
-        CASE 
-            WHEN rq.deleted_at IS NOT NULL THEN NULL 
-            ELSE rq.user_id 
-        END AS rent_user_id,
-        CASE 
-            WHEN rq.deleted_at IS NOT NULL THEN NULL 
-            ELSE rq.due_date 
-        END AS rent_due_date,
-        brq.user_id AS reservation_user_id,
-        brq.due_date AS reservation_due_date,
             jsonb_agg(
                 jsonb_build_object(
                     'genreId', g.genre_id,
@@ -37,13 +27,11 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         JOIN author a ON b.author_id = a.author_id
         JOIN book_genre bg ON bg.book_id = b.book_id
         JOIN genre g ON g.genre_id = bg.genre_id
-        LEFT JOIN book_rent_queue rq ON rq.book_id = b.book_id
-        LEFT JOIN book_reservation_queue brq ON brq.book_id = b.book_id
         WHERE b.book_id = :id
-        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date, rq.deleted_at
+        GROUP BY b.book_id, a.author_id
         ORDER BY b.book_id;
     """)
-    fun findByBookId(@Param("id") bookId: Long): BookInfo?
+    fun findByBookId(@Param("id") bookId: Long): Book?
 
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
@@ -148,15 +136,6 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
             a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
-            brq.user_id AS reservation_user_id,
-            CASE 
-                WHEN rq.deleted_at IS NOT NULL THEN NULL 
-                ELSE rq.user_id 
-            END AS rent_user_id,
-            CASE 
-                WHEN rq.deleted_at IS NOT NULL THEN NULL 
-                ELSE rq.due_date 
-            END AS rent_due_date, brq.due_date AS reservation_due_date,
             jsonb_agg(
                 jsonb_build_object(
                     'genreId', g.genre_id,
@@ -167,8 +146,6 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         JOIN author a ON b.author_id = a.author_id
         JOIN book_genre bg ON bg.book_id = b.book_id
         JOIN genre g ON g.genre_id = bg.genre_id
-        LEFT JOIN book_rent_queue rq ON rq.book_id = b.book_id
-        LEFT JOIN book_reservation_queue brq ON brq.book_id = b.book_id
         WHERE (:bookName IS NULL OR LOWER(b.book_name) LIKE CONCAT('%', LOWER(:bookName), '%'))
         AND (
             :authorName IS NULL
@@ -176,7 +153,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
             OR (a.author_name % :authorName AND SIMILARITY(a.author_name, LOWER(:authorName)) > 0.4)
         )
         AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
-        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date, rq.deleted_at
+        GROUP BY b.book_id, a.author_id
         ORDER BY b.book_id
         LIMIT :limit OFFSET :offset;
     """)
@@ -186,7 +163,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         @Param("genres") genres: List<Int>?,
         @Param("limit") limit: Int,
         @Param("offset") offset: Long
-    ): List<BookInfo>
+    ): List<Book>
 
     @Query("""
         SELECT COUNT(DISTINCT b.book_id)
@@ -210,15 +187,6 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
             a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
-            brq.user_id AS reservation_user_id,
-            CASE 
-                WHEN rq.deleted_at IS NOT NULL THEN NULL 
-                ELSE rq.user_id 
-            END AS rent_user_id,
-            CASE 
-                WHEN rq.deleted_at IS NOT NULL THEN NULL 
-                ELSE rq.due_date 
-            END AS rent_due_date, brq.due_date AS reservation_due_date,
             jsonb_agg(
                 jsonb_build_object(
                     'genreId', g.genre_id,
@@ -229,8 +197,6 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         JOIN author a ON b.author_id = a.author_id
         JOIN book_genre bg ON bg.book_id = b.book_id
         JOIN genre g ON g.genre_id = bg.genre_id
-        LEFT JOIN book_rent_queue rq ON rq.book_id = b.book_id
-        LEFT JOIN book_reservation_queue brq ON brq.book_id = b.book_id
         WHERE (:bookName IS NULL OR LOWER(b.book_name) LIKE CONCAT('%', LOWER(:bookName), '%'))
         AND (
             :authorName IS NULL
@@ -239,8 +205,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         )
         AND (COALESCE(:genres, NULL) IS NULL OR bg.genre_id in (:genres))
         AND b.status = :status
-        GROUP BY b.book_id, a.author_id, rq.user_id, brq.user_id, rq.due_date, brq.due_date, rq.deleted_at
-        ORDER BY b.book_id
+        GROUP BY b.book_id, a.author_id
         LIMIT :limit OFFSET :offset;
     """)
     fun findManagementPageWithStatus(
@@ -250,7 +215,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         @Param("genres") genres: List<Int>?,
         @Param("limit") limit: Int,
         @Param("offset") offset: Long
-    ): List<BookInfo>
+    ): List<Book>
 
     @Query("""
         SELECT COUNT(DISTINCT b.book_id)
@@ -304,12 +269,14 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
     @Query("""
         UPDATE book SET status = :status
         WHERE book_id = :id
+        
     """)
     fun updateBookStatus(@Param("id") id: Long, @Param("status") status: BookStatus)
 
     @Query("""
         SELECT b.book_id, b.book_name, a.author_id, a.author_name,
             a.author_photo_url, b.release_year, b.age_limit, b.description, b.photo_url, b.rating, b.status,
+            rq.deleted_at as read_date,
             jsonb_agg(
                 jsonb_build_object(
                     'genreId', g.genre_id,
@@ -323,7 +290,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         JOIN book_rent_queue rq ON b.book_id = rq.book_id
         WHERE rq.user_id = :id
         AND b.status != 'NOT_AVAILABLE'
-        GROUP BY b.book_id, a.author_id
+        GROUP BY b.book_id, a.author_id, rq.deleted_at
         ORDER BY b.book_id
         LIMIT :limit OFFSET :offset;
     """)
@@ -331,7 +298,7 @@ interface BookRepository : CrudRepository<BookEntity, Long> {
         @Param("id") userId: UUID,
         @Param("limit") limit: Int,
         @Param("offset") offset: Long
-    ): List<Book>
+    ): List<BookHistory>
 
     @Query("""
         SELECT COUNT(b.book_id)

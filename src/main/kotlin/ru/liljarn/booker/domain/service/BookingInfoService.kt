@@ -6,7 +6,6 @@ import ru.liljarn.booker.domain.model.dto.BookingInfo
 import ru.liljarn.booker.domain.repository.BookRepository
 import ru.liljarn.booker.domain.repository.RentRepository
 import ru.liljarn.booker.domain.repository.ReservationRepository
-import ru.liljarn.booker.support.mapper.toBook
 import java.util.*
 
 @Service
@@ -23,7 +22,7 @@ class BookingInfoService(
     private fun findBookInfoWithReservation(userId: UUID) =
         reservationRepository.findByUserId(userId)?.let {
             BookingInfo(
-                book = bookRepository.findByBookId(it.bookId)!!.toBook(),
+                book = bookRepository.findByBookId(it.bookId)!!,
                 dueDate = it.dueDate
             )
         }
@@ -32,7 +31,7 @@ class BookingInfoService(
     private fun findBookInfoWithRent(userId: UUID) =
         rentRepository.findByUserIdAndDeletedAtIsNull(userId)?.let {
             BookingInfo(
-                book = bookRepository.findByBookId(it.bookId)!!.toBook(),
+                book = bookRepository.findByBookId(it.bookId)!!,
                 dueDate = it.dueDate
             )
         }

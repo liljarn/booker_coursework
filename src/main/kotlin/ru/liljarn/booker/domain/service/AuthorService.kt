@@ -6,6 +6,7 @@ import ru.liljarn.booker.api.model.request.AddAuthorRequest
 import ru.liljarn.booker.domain.model.entity.AuthorEntity
 import ru.liljarn.booker.domain.repository.AuthorRepository
 import ru.liljarn.booker.support.mapper.toDto
+import ru.liljarn.booker.support.mapper.toPage
 import ru.liljarn.booker.support.pageRequest
 
 @Service
@@ -20,11 +21,11 @@ class AuthorService(
 
     fun getAuthorsPage(page: Int) = pageRequest(page) {
         authorRepository.findAll(it)
-    }.toDto()
+    }.toPage()
 
     fun getAuthorsPageByName(page: Int, text: String) = pageRequest(page) {
         authorRepository.findAllByAuthorNameContainingIgnoreCase(text, it)
-    }.toDto()
+    }.toPage()
 
     fun addAuthor(request: AddAuthorRequest) = request.let {
         AuthorEntity(

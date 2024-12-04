@@ -5,6 +5,7 @@ import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import ru.liljarn.booker.domain.model.dto.RentInfo
 import ru.liljarn.booker.domain.model.entity.RentEntity
 import java.time.LocalDate
 import java.util.*
@@ -41,4 +42,12 @@ interface RentRepository : CrudRepository<RentEntity, UUID> {
             AND brq.deleted_at IS NULL
     """)
     fun findByDueDateBeforeAndDeletedAtIsNull(date: LocalDate): List<RentEntity>
+
+    @Query("""
+        SELECT b.book_id, brq.user_id, brq.due_date FROM book_rent_queue brq
+        RIGHT JOIN book b ON brq.book_id = b.book_id
+        WHERE b.book_id IN (:bookIds)
+        AND brq.deleted_at IS NULL
+    """)
+    fun findRentInfo(bookIds: List<Long>): List<RentInfo>
 }

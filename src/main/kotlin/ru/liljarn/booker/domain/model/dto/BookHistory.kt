@@ -4,9 +4,8 @@ import org.springframework.data.annotation.Reference
 import ru.liljarn.booker.domain.model.type.BookStatus
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.util.*
 
-data class BookInfo(
+data class BookHistory(
     val bookId: Long,
     val bookName: String,
     val authorId: Long,
@@ -18,10 +17,7 @@ data class BookInfo(
     val photoUrl: String,
     val rating: BigDecimal,
     val status: BookStatus = BookStatus.AVAILABLE,
-    val rentUserId: UUID?,
-    val reservationUserId: UUID?,
-    val rentDueDate: LocalDate?,
-    val reservationDueDate: LocalDate?,
     @Reference
-    val genres: ArrayList<Genre>
+    val genres: ArrayList<Genre>,
+    val readDate: LocalDate?
 )
